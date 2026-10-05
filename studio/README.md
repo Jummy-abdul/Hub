@@ -52,6 +52,15 @@ The CLI asks for a hostname, for example `fixiam-docs`, and publishes the Studio
 | Release Notes | `releaseNote` | “What's changed?” Date, category (New, Improved, Fixed, Security), affected area, summary, details, related docs |
 | Categories | `category` | Sidebar groups for Concepts, Guides and Journeys. A category can have a parent to make nested groups |
 
+### Images and screenshots
+
+Images are uploaded to Sanity's image library. Nobody types image URLs.
+
+- **Guide step screenshot:** Guides → open a guide → **Steps** → open a step → **Screenshot**. Use **Upload** or **Select** (to reuse an uploaded image), fill in **Alt text** and, optionally, **Caption**. The image's menu has **Replace** and **Clear field** (remove). **Crop image** adjusts the crop.
+- **Image anywhere in rich text** (concept sections, guide step instructions, journey stages, release note details, expected results): place the cursor where the image should go and choose **Insert Image** in the rich text toolbar.
+- **Alt text** is required once an image is uploaded. **Caption** is optional.
+- An image field without an uploaded file shows nothing on the website.
+
 Concepts, Guides and Journeys can be browsed in two ways: **All** (alphabetical) or **By category**. Creating a document from inside a category fills in that category for you.
 
 Article types share the same tabs: **Content**, **Navigation** (slug, category, sidebar order), **Related** and **Search and metadata** (last updated, keywords).

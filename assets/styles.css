@@ -838,8 +838,16 @@ body.palette-open { overflow: hidden; }
 .prose :where(h3) { font-size: 18px; line-height: 1.4; font-weight: 600; margin: 1.4em 0 0.5em; }
 .prose :where(h4) { font-size: 16px; line-height: 1.45; font-weight: 600; color: var(--fg); margin: 1.2em 0 0.35em; }
 .prose :where(h3, h4):first-child { margin-top: 0; }
+/* Uploaded images and screenshots: natural aspect ratio, never wider than the column. */
 .figure { margin: 16px 0 1.3em; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
-.figure img { display: block; width: 100%; height: auto; }
+.figure img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.figure-zoom { display: block; cursor: zoom-in; }
+.figure-zoom:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius); }
+.lightbox { padding: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--fg); max-width: min(96vw, 1600px); max-height: 92vh; box-shadow: var(--shadow-2); overflow: auto; }
+.lightbox::backdrop { background: rgb(10 15 22 / 0.72); }
+.lightbox img { display: block; max-width: 100%; max-height: calc(92vh - 64px); width: auto; height: auto; margin: 0 auto; }
+.lightbox form { position: sticky; top: 0; display: flex; justify-content: flex-end; padding: 6px; background: var(--surface); }
+.lightbox-caption { margin: 0; padding: 10px 16px 14px; font-size: 13.5px; color: var(--fg-3); border-top: 1px solid var(--border); }
 
 /* ---------------- Template view (annotations) ---------------- */
 html.annotate [data-c] { outline: 1px dashed var(--annot); outline-offset: 2px; position: relative; }

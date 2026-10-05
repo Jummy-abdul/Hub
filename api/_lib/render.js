@@ -35,15 +35,12 @@ const SAFE_LINK = /^(https?:|mailto:)/i
 export function createRenderer({routeFor, imageFor}) {
   const H = getHelpers()
 
-  // Images without an uploaded file show the same screenshot placeholder the
-  // prototype used, so editors can see where a screenshot belongs.
+  // Only uploaded images are shown. An image field without a file (for
+  // example a screenshot not added yet) renders nothing on the site.
   const figureHtml = (value) => {
-    if (!value) return ''
-    const image = value.asset?._ref ? imageFor(value) : null
-    if (image) return H.figure({...image, alt: value.alt || '', caption: value.caption})
-    const where = String(value.alt || '').replace(/^Screenshot of the Fixiam Admin Console:\s*/i, '')
-    const [area, ...rest] = where.split(' › ')
-    return H.shot({area: area || 'Dashboard', title: rest.join(' › '), kind: 'none', caption: value.caption})
+    if (!value?.asset?._ref) return ''
+    const image = imageFor(value)
+    return image ? H.figure({...image, alt: value.alt || '', caption: value.caption}) : ''
   }
 
   const components = {

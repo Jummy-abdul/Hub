@@ -199,9 +199,16 @@
     return draw(caption ? `<figcaption>${esc(caption)}</figcaption>` : '');
   };
 
-  // Uploaded image with alt text and an optional caption.
-  const figure = ({ src, alt = '', caption, width, height }) =>
-    `<figure class="figure" data-c="Image"><img src="${esc(src)}" alt="${esc(alt)}"${width ? ` width="${width}" height="${height}"` : ''} loading="lazy" decoding="async">${caption ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`;
+  // Uploaded image (for example an Admin Console screenshot) with alt text and an
+  // optional caption. Shown at its natural aspect ratio, never wider than the
+  // content column. When a larger version exists, the image opens it on click.
+  const figure = ({ src, srcset, sizes, alt = '', caption, width, height, full }) => {
+    const img = `<img src="${esc(src)}"${srcset ? ` srcset="${esc(srcset)}" sizes="${esc(sizes || '100vw')}"` : ''} alt="${esc(alt)}"${width ? ` width="${width}" height="${height}"` : ''} loading="lazy" decoding="async">`;
+    const body = full
+      ? `<a class="figure-zoom" href="${esc(full)}" data-zoom target="_blank" rel="noopener" title="Select to enlarge">${img}<span class="sr-only">Open a larger version of this image</span></a>`
+      : img;
+    return `<figure class="figure" data-c="Image">${body}${caption ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`;
+  };
 
   // Inline UI label, for example: Select ${ui('Save')}
   const ui = (t) => `<span class="ui-label">${t}</span>`;

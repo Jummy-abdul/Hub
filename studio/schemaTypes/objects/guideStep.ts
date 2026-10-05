@@ -20,7 +20,8 @@ export const guideStep = defineType({
       name: 'screenshot',
       title: 'Screenshot',
       type: 'figure',
-      description: 'Optional. Shown below the instructions.',
+      description:
+        'Optional. Upload a screenshot for this step, usually of the Fixiam Admin Console. It appears below the step instructions. Use Replace to swap it, or Clear field to remove it.',
     }),
   ],
   preview: {

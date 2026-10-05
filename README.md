@@ -77,6 +77,8 @@ The `studio/` folder contains the Sanity Studio for project `idpyt5ut`, dataset 
 
 What comes from Sanity: all pages and their content, categories and their nesting and order (the sidebar), related documentation, journey stages and their Learn and Do links, release notes, and the homepage heading, supporting text, search placeholder, suggested searches, discovery cards, popular topics and featured journeys. Search indexes whatever Sanity returns, so there is no separate search data to maintain.
 
+Images are uploaded in the Studio (guide step **Screenshot**, or **Insert Image** in any rich text). The site serves them from Sanity's image CDN in responsive sizes, keeps their aspect ratio, shows the caption, and opens a larger version on click. Image fields without a file show nothing.
+
 What stays in code: the site chrome in `assets/js/config.js`, such as the primary navigation, section names and taglines, and search synonyms.
 
 ## Project structure

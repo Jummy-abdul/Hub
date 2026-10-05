@@ -84,6 +84,31 @@ const releaseAnchor = (doc) => `rn-${doc._id.replace(/^releaseNote-/, '')}`
 
 const byOrder = (a, b) => (a.order ?? DEFAULT_ORDER) - (b.order ?? DEFAULT_ORDER) || String(a.title).localeCompare(String(b.title))
 
+/**
+ * Responsive URLs for an uploaded Sanity image. Respects the editor's crop,
+ * keeps the natural aspect ratio and never upscales.
+ * Asset IDs look like image-<hash>-<width>x<height>-<format>.
+ */
+const IMAGE_WIDTHS = [480, 800, 1200, 1600, 2000]
+export function imageSources(image, builder) {
+  const m = /^image-[a-zA-Z0-9]+-(\d+)x(\d+)-[a-z0-9]+$/.exec(image?.asset?._ref || '')
+  if (!m) return null
+  const crop = image.crop || {}
+  const width = Math.max(1, Math.round(+m[1] * (1 - (crop.left || 0) - (crop.right || 0))))
+  const height = Math.max(1, Math.round(+m[2] * (1 - (crop.top || 0) - (crop.bottom || 0))))
+  const url = (w) => builder.image(image).width(w).fit('max').auto('format').url()
+  const steps = [...new Set([...IMAGE_WIDTHS.filter((w) => w < width), Math.min(width, 2000)])]
+  return {
+    src: url(Math.min(width, 1200)),
+    srcset: steps.map((w) => `${url(w)} ${w}w`).join(', '),
+    // The article column is at most 704px wide; below 1024px it spans the screen.
+    sizes: '(max-width: 1023px) 100vw, 704px',
+    width,
+    height,
+    full: url(Math.min(width, 2400)),
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Build                                                               */
 /* ------------------------------------------------------------------ */
@@ -132,16 +157,7 @@ export function buildBundle(raw, config = sanityConfig()) {
     [...new Set((refs || []).map((r) => index.get(r?._ref)).filter((t) => t && t.type === type).map((t) => t.slug))]
 
   const imageBuilder = createImageUrlBuilder({projectId: config.projectId, dataset: config.dataset})
-  const imageFor = (image) => {
-    try {
-      const m = /^image-[a-zA-Z0-9]+-(\d+)x(\d+)-/.exec(image.asset._ref)
-      const width = m ? Math.min(+m[1], 1600) : undefined
-      const height = m && width ? Math.round((+m[2] * width) / +m[1]) : undefined
-      return {src: imageBuilder.image(image).width(1600).fit('max').auto('format').url(), width, height}
-    } catch {
-      return null
-    }
-  }
+  const imageFor = (image) => imageSources(image, imageBuilder)
   const r = createRenderer({routeFor, imageFor})
 
   // 2. Pages. Each document is converted on its own so one bad document

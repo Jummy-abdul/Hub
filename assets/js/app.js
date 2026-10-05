@@ -303,6 +303,12 @@
   document.addEventListener('click', (e) => {
     const t = e.target;
 
+    const zoom = t.closest('[data-zoom]');
+    if (zoom && openLightbox(zoom)) {
+      e.preventDefault();
+      return;
+    }
+
     if (t.closest('.skip-link')) {
       e.preventDefault();
       const m = $('#main');
@@ -455,6 +461,33 @@
       document.body.classList.remove('nav-open');
     }
   });
+
+  /* ---------------- Image viewer ---------------- */
+  // Opens a documentation image larger, in the browser's built-in dialog.
+  // Without dialog support the link simply opens the image in a new tab.
+  let lightbox;
+  function openLightbox(link) {
+    if (typeof HTMLDialogElement !== 'function') return false;
+    if (!lightbox) {
+      document.body.insertAdjacentHTML(
+        'beforeend',
+        `<dialog class="lightbox" aria-label="Enlarged image"><form method="dialog"><button class="icon-btn lightbox-close" aria-label="Close">${icons.x}</button></form><img alt=""><p class="lightbox-caption"></p></dialog>`
+      );
+      lightbox = $('.lightbox');
+      // Clicking the dark area outside the image closes the viewer.
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) lightbox.close();
+      });
+    }
+    const img = link.querySelector('img');
+    const caption = link.closest('figure')?.querySelector('figcaption')?.textContent || '';
+    $('img', lightbox).src = link.getAttribute('href');
+    $('img', lightbox).alt = img ? img.alt : '';
+    $('.lightbox-caption', lightbox).textContent = caption;
+    $('.lightbox-caption', lightbox).hidden = !caption;
+    lightbox.showModal();
+    return true;
+  }
 
   /* ---------------- Content loading states ---------------- */
   // Shown while content loads, or if it cannot be loaded at all.
