@@ -114,6 +114,95 @@
     </figure>`;
   };
 
+
+  // Built-in diagrams. Drawn as markup (not images) so they stay sharp and
+  // follow the light and dark themes. Used by rich text "diagram" blocks.
+  const DIAGRAMS = {
+    'sso-flow': (cap) => `
+<figure class="diagram" data-c="Diagram">
+  <div class="diagram-scroll">
+  <svg viewBox="0 0 720 420" role="img" aria-labelledby="sso-dg-t sso-dg-d" class="dg">
+    <title id="sso-dg-t">Single Sign On authentication flow</title>
+    <desc id="sso-dg-d">The user opens an application, the application redirects to Fixiam, Fixiam verifies the user, returns a signed assertion, and the application grants access.</desc>
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" class="dg-head"/></marker>
+      <marker id="ah-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" class="dg-head-accent"/></marker>
+    </defs>
+    <rect x="30" y="16" width="160" height="48" rx="8" class="dg-lane"/>
+    <text x="110" y="45" class="dg-lane-t">User and browser</text>
+    <rect x="280" y="16" width="160" height="48" rx="8" class="dg-lane"/>
+    <text x="360" y="37" class="dg-lane-t">Application</text>
+    <text x="360" y="54" class="dg-lane-s">Service provider</text>
+    <rect x="530" y="16" width="160" height="48" rx="8" class="dg-lane accent"/>
+    <text x="610" y="37" class="dg-lane-t accent">Fixiam</text>
+    <text x="610" y="54" class="dg-lane-s accent">Identity provider</text>
+    <line x1="110" y1="64" x2="110" y2="380" class="dg-life"/>
+    <line x1="360" y1="64" x2="360" y2="380" class="dg-life"/>
+    <line x1="610" y1="64" x2="610" y2="380" class="dg-life"/>
+
+    <line x1="114" y1="105" x2="354" y2="105" class="dg-arrow" marker-end="url(#ah)"/>
+    <text x="235" y="96" class="dg-label">1. Opens the application</text>
+
+    <line x1="364" y1="150" x2="604" y2="150" class="dg-arrow" marker-end="url(#ah)"/>
+    <text x="485" y="141" class="dg-label">2. Redirects with a sign-in request</text>
+
+    <rect x="520" y="178" width="180" height="62" rx="8" class="dg-box"/>
+    <text x="610" y="204" class="dg-box-t">3. Verifies identity</text>
+    <text x="610" y="224" class="dg-box-s">Password · MFA · Policy</text>
+
+    <line x1="604" y1="280" x2="364" y2="280" class="dg-arrow accent" marker-end="url(#ah-a)"/>
+    <text x="485" y="271" class="dg-label">4. Returns a signed assertion</text>
+
+    <line x1="354" y1="330" x2="114" y2="330" class="dg-arrow" marker-end="url(#ah)"/>
+    <text x="235" y="321" class="dg-label">5. Grants access</text>
+
+    <text x="360" y="406" class="dg-foot">If the user already has a Fixiam session, step 3 is skipped and access is immediate.</text>
+  </svg>
+  </div>
+  ${cap}
+</figure>`,
+    'identity-fit': (cap) => `
+<figure class="fit" data-c="Diagram">
+  <div class="fit-grid">
+    <div class="fit-col">
+      <div class="fit-h">Identity sources</div>
+      <span>Active Directory</span><span>Google Workspace</span><span>SageHR</span><span>SeamlessHR</span>
+    </div>
+    <div class="fit-arrow" aria-hidden="true">${icons.arrowRight}</div>
+    <div class="fit-core">
+      <div class="fit-h">Fixiam</div>
+      <span>Directory</span><span>Authentication policies</span><span>Application assignments</span><span>Audit log</span>
+    </div>
+    <div class="fit-arrow" aria-hidden="true">${icons.arrowRight}</div>
+    <div class="fit-col">
+      <div class="fit-h">Applications</div>
+      <span>Microsoft 365</span><span>Salesforce</span><span>Slack</span><span>Internal apps</span>
+    </div>
+  </div>
+  ${cap}
+</figure>`,
+    'jml-lifecycle': (cap) => `
+<figure class="jml" data-c="Diagram">
+  <div class="jml-grid">
+    <div class="jml-step"><span class="jml-k">Joiner</span><strong>A new hire is created in HR</strong><span>Fixiam creates the account, assigns birthright applications and sends an activation email.</span></div>
+    <div class="jml-arrow" aria-hidden="true">${icons.arrowRight}</div>
+    <div class="jml-step"><span class="jml-k">Mover</span><strong>Department or role changes</strong><span>Group rules recalculate. New access is granted and access the role no longer needs is removed.</span></div>
+    <div class="jml-arrow" aria-hidden="true">${icons.arrowRight}</div>
+    <div class="jml-step"><span class="jml-k">Leaver</span><strong>Employment ends</strong><span>Fixiam suspends sign-in, revokes sessions, deprovisions apps and keeps an audit record.</span></div>
+  </div>
+  ${cap}
+</figure>`,
+  };
+  const diagram = (variant, caption) => {
+    const draw = DIAGRAMS[variant];
+    if (!draw) return '';
+    return draw(caption ? `<figcaption>${esc(caption)}</figcaption>` : '');
+  };
+
+  // Uploaded image with alt text and an optional caption.
+  const figure = ({ src, alt = '', caption, width, height }) =>
+    `<figure class="figure" data-c="Image"><img src="${esc(src)}" alt="${esc(alt)}"${width ? ` width="${width}" height="${height}"` : ''} loading="lazy" decoding="async">${caption ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`;
+
   // Inline UI label, for example: Select ${ui('Save')}
   const ui = (t) => `<span class="ui-label">${t}</span>`;
   const kbd = (t) => `<kbd>${t}</kbd>`;
@@ -128,6 +217,8 @@
     code,
     table,
     shot,
+    diagram,
+    figure,
     ui,
     kbd,
   };

@@ -36,35 +36,31 @@
 
   /* =========================== HOME =========================== */
   TPL.home = () => {
-    const cards = [
-      { type: 'concept', title: 'Learn Fixiam', desc: 'Understand identity, authentication, access and the concepts behind Fixiam.', cta: 'Explore concepts' },
-      { type: 'guide', title: 'Guides', desc: 'Step by step instructions for configuring and managing Fixiam.', cta: 'Browse guides' },
-      { type: 'journey', title: 'Journeys', desc: 'Follow end to end paths for achieving larger identity and access outcomes.', cta: 'Explore journeys' },
-      { type: 'release', title: 'Release Notes', desc: "See what's new, improved and fixed in Fixiam.", cta: 'View release notes' },
-    ];
+    // Homepage content comes from the "Documentation Homepage" document in
+    // Sanity (FX.home). Sections without content are left out.
+    const H = FX.home || {};
+    const cards = (H.discoveryCards && H.discoveryCards.length
+      ? H.discoveryCards
+      : ['concept', 'guide', 'journey', 'release'].map((t) => ({ type: t, title: T[t].plural, desc: T[t].intro, cta: `Browse ${T[t].plural.toLowerCase()}` }))
+    ).filter((c) => T[c.type]);
     const count = (type) => (type === 'release' ? `${FX.releases.length} updates` : `${Object.keys(FX.content[type].pages).length} ${type === 'journey' ? 'journeys' : 'articles'}`);
-    const popular = [
-      ['Set up Single Sign On', 'guide', 'configure-saml-sso'],
-      ['Configure Multi Factor Authentication', 'guide', 'configure-mfa'],
-      ['Add users', 'guide', 'add-user'],
-      ['Connect Active Directory', 'guide', 'connect-active-directory'],
-      ['Manage devices', 'guide', 'enroll-windows-device'],
-      ['Configure access requests', 'guide', 'create-access-request'],
-      ['Set up application roles', 'guide', 'configure-application-roles'],
-      ['Connect an HR source', 'guide', 'connect-hr-source'],
-    ];
+    const popular = (H.popular || []).filter((p) => p.route);
+    const popularMeta = (p) => {
+      const cat = p.type === 'concept' || p.type === 'guide' ? M.category(p.type, p.slug) : null;
+      return `${T[p.type].label}${cat ? ' · ' + esc(cat.title) : ''}`;
+    };
     const latest = FX.releases.slice(0, 4);
-    const featured = ['roll-out-sso', 'automate-onboarding-offboarding'];
+    const featured = (H.featured || []).filter((slug) => M.exists('journey', slug));
     const main = `
       <section class="hero" data-c="Home hero">
         <div class="hero-inner">
-          <h1>Fixiam Documentation</h1>
-          <p class="lead">${esc(FX.SITE.tagline)}</p>
+          <h1>${esc(H.title || FX.SITE.name)}</h1>
+          <p class="lead">${esc(H.tagline || FX.SITE.tagline)}</p>
           <div class="hero-search" data-c="Search field">
             <form class="hero-form" role="search" data-hero-search>
               <label for="hero-q" class="sr-only">Search Fixiam documentation</label>
               ${icons.search}
-              <input id="hero-q" type="search" placeholder="Search Fixiam documentation..." autocomplete="off" aria-controls="hero-results" aria-expanded="false" role="combobox">
+              <input id="hero-q" type="search" placeholder="${esc(H.searchPlaceholder || 'Search Fixiam documentation...')}" autocomplete="off" aria-controls="hero-results" aria-expanded="false" role="combobox">
               <kbd class="hero-kbd">/</kbd>
             </form>
             <div class="sr-panel hero-panel" id="hero-results" role="listbox" hidden></div>
@@ -79,28 +75,25 @@
             .map(
               (c) => `<a class="discover-card t-${c.type}" href="#${T[c.type].base}" data-c="Discovery card">
               <span class="dc-top"><span class="dc-icon">${U.typeIcon[c.type]}</span><span class="dc-tag">${T[c.type].tagline}</span></span>
-              <span class="dc-title">${c.title}</span>
-              <span class="dc-desc">${c.desc}</span>
-              <span class="dc-foot"><span class="dc-cta">${c.cta}${icons.arrowRight}</span><span class="dc-count">${count(c.type)}</span></span>
+              <span class="dc-title">${esc(c.title)}</span>
+              <span class="dc-desc">${esc(c.desc)}</span>
+              <span class="dc-foot"><span class="dc-cta">${esc(c.cta)}${icons.arrowRight}</span><span class="dc-count">${count(c.type)}</span></span>
             </a>`
             )
             .join('')}
         </section>
 
-        <section class="home-section" aria-labelledby="popular-h">
+        ${popular.length ? `<section class="home-section" aria-labelledby="popular-h">
           <div class="section-h"><h2 id="popular-h">Popular topics</h2><a href="#/guides" class="more-link">All guides${icons.arrowRight}</a></div>
           <div class="popular-grid" data-c="Popular topics">
             ${popular
-              .map(([label, type, slug]) => {
-                const cat = M.category(type, slug);
-                return `<a class="popular" href="#${M.href(type, slug)}"><span class="popular-title">${esc(label)}</span><span class="popular-meta">${T[type].label} · ${esc(cat ? cat.title : '')}</span></a>`;
-              })
+              .map((p) => `<a class="popular" href="#${p.route}"><span class="popular-title">${esc(p.label)}</span><span class="popular-meta">${popularMeta(p)}</span></a>`)
               .join('')}
           </div>
-        </section>
+        </section>` : ''}
 
         <div class="home-split">
-          <section class="home-section" aria-labelledby="journeys-h">
+          ${featured.length ? `<section class="home-section" aria-labelledby="journeys-h">
             <div class="section-h"><h2 id="journeys-h">Start with a journey</h2><a href="#/journeys" class="more-link">All journeys${icons.arrowRight}</a></div>
             <div class="stack">
               ${featured
@@ -110,7 +103,7 @@
                 })
                 .join('')}
             </div>
-          </section>
+          </section>` : ''}
           <section class="home-section" aria-labelledby="new-h">
             <div class="section-h"><h2 id="new-h">What's new</h2><a href="#/release-notes" class="more-link">All release notes${icons.arrowRight}</a></div>
             <ul class="whatsnew" data-c="Latest release notes">
@@ -222,7 +215,7 @@
         const st = typeof s === 'string' ? { title: s } : s;
         const id = `step-${i + 1}`;
         toc.push({ id, title: `${i + 1}. ${st.title}`, level: 3 });
-        return `<li class="step" id="${id}"><span class="step-n" aria-hidden="true">${i + 1}</span><div class="step-body"><h3>${esc(st.title)}</h3>${st.html || ''}${st.shot ? FX.h.shot(st.shot) : ''}</div></li>`;
+        return `<li class="step" id="${id}"><span class="step-n" aria-hidden="true">${i + 1}</span><div class="step-body"><h3>${esc(st.title)}</h3>${st.html || ''}${st.shot ? FX.h.shot(st.shot) : ''}${st.media || ''}</div></li>`;
       })
       .join('')}</ol></section>`;
     toc.push({ id: 'result', title: 'Expected result' });
@@ -251,7 +244,7 @@
     const { html, toc } = type === 'concept' ? conceptBody(p) : guideBody(p);
     const read = M.readingTime(html);
     let meta = metaItem('calendar', `Updated <time datetime="${p.updated}">${M.fmtDateLong(p.updated)}</time>`);
-    if (type === 'guide') meta += metaItem('clock', `About ${esc(p.time)}`) + metaItem('user', esc(p.role));
+    if (type === 'guide') meta += (p.time ? metaItem('clock', `About ${esc(p.time)}`) : '') + (p.role ? metaItem('user', esc(p.role)) : '');
     else meta += metaItem('book', `${read} min read`);
     meta += `<button type="button" class="meta meta-btn" data-copy-link>${icons.link}Copy link</button>`;
 
@@ -282,7 +275,7 @@
         const j = pages[slug];
         const done = U.journeyDone(slug).size;
         return `<a class="journey-card" href="#${M.href('journey', slug)}" data-c="Journey card">
-          <span class="jc-top">${U.badge('journey')}<span class="effort effort-${j.effort.toLowerCase()}">${j.effort} effort</span></span>
+          <span class="jc-top">${U.badge('journey')}${j.effort ? `<span class="effort effort-${j.effort.toLowerCase()}">${esc(j.effort)} effort</span>` : ''}</span>
           <span class="jc-title">${esc(j.title)}</span>
           <span class="jc-desc">${esc(j.summary)}</span>
           <dl class="jc-meta">
@@ -316,7 +309,7 @@
     const meta = `<dl class="journey-facts" data-c="Journey facts">
       <div><dt>Who it is for</dt><dd>${esc(j.audience)}</dd></div>
       <div><dt>Stages</dt><dd>${j.stages.length}</dd></div>
-      <div><dt>Effort</dt><dd><span class="effort effort-${j.effort.toLowerCase()}">${j.effort}</span></dd></div>
+      ${j.effort ? `<div><dt>Effort</dt><dd><span class="effort effort-${j.effort.toLowerCase()}">${esc(j.effort)}</span></dd></div>` : ''}
       <div><dt>Typical duration</dt><dd>${esc(j.duration)}</dd></div>
     </dl>`;
 
@@ -542,7 +535,7 @@
       ${U.crumbs([['Docs', '/'], ['Prototype notes']])}
       <header class="page-head"><h1>About this prototype</h1><p class="lead">This prototype shows how Fixiam Documentation should behave end to end. All content is realistic sample content and will be replaced.</p></header>
       <div class="prose">
-        <section class="prose-section">${h2('templates', 'Page templates')}<p>Every page is rendered from one of these templates. Content files supply data only.</p>${FX.h.table(['Template', 'Route', 'Contains'], rows)}</section>
+        <section class="prose-section">${h2('templates', 'Page templates')}<p>Every page is rendered from one of these templates. Content comes from Sanity; templates never contain page content.</p>${FX.h.table(['Template', 'Route', 'Contains'], rows)}</section>
         <section class="prose-section">${h2('components', 'Reusable components')}<p>Turn on <button type="button" class="btn btn-secondary btn-sm" data-annotate>${icons.grid}Template view</button> to outline and label every component on any page.</p><div class="chips">${comps.map((c) => `<span class="chip static">${c}</span>`).join('')}</div></section>
         <section class="prose-section">${h2('content-model', 'Content model')}<p>Each type has a fixed shape so authors cannot blur Concepts, Guides and Journeys.</p>${FX.h.code(`guide: {
   title, summary, updated, time, role, keywords[],

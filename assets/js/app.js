@@ -102,6 +102,7 @@
   }
 
   function render({ samePage } = {}) {
+    if (!FX.content) return renderStatusPage();
     const { path, query } = parse(currentRoute || '/');
     const { page, section } = resolve(path, query);
     const app = $('#app');
@@ -455,10 +456,42 @@
     }
   });
 
+  /* ---------------- Content loading states ---------------- */
+  // Shown while content loads, or if it cannot be loaded at all.
+  function renderStatusPage() {
+    const failed = FX.contentStatus === 'error';
+    $('#primary-nav').innerHTML = U.primaryNav(null);
+    $('#app').innerHTML = failed
+      ? `<div class="page-narrow"><main id="main" tabindex="-1"><div class="no-results status-page" role="alert">
+          <div class="nr-icon">${icons.info}</div>
+          <p class="nr-title">Documentation is temporarily unavailable</p>
+          <p class="nr-text">We couldn’t load the documentation content. Check your connection and try again in a moment.</p>
+          <button type="button" class="btn btn-sm" data-retry>Try again</button>
+        </div></main></div>`
+      : `<div class="page-narrow"><main id="main" tabindex="-1" aria-busy="true"><p class="loading-msg" role="status"><span class="spinner" aria-hidden="true"></span>Loading documentation…</p></main></div>`;
+  }
+
+  // A slim notice when the site is showing this browser's saved copy.
+  function renderContentNotice() {
+    if (FX.contentStatus !== 'offline' || $('.content-notice')) return;
+    $('#header').insertAdjacentHTML(
+      'afterend',
+      `<div class="content-notice" role="status">${icons.info}<span>You’re viewing a saved copy of the documentation. The latest content couldn’t be loaded.</span><button type="button" class="btn btn-ghost btn-sm" data-retry>Try again</button></div>`
+    );
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-retry]')) location.reload();
+  });
+
   /* ---------------- Boot ---------------- */
   renderHeader();
   renderPalette();
   $('#year').textContent = FX.SITE.today.slice(0, 4);
   currentRoute = hashRoute() || '/';
-  render();
+  renderStatusPage();
+  FX.loadContent().then(() => {
+    renderContentNotice();
+    render();
+  });
 })();

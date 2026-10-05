@@ -1,5 +1,11 @@
-// Crawls every internal route in the prototype and reports broken links and
-// script errors. Usage: node scripts/check.mjs [screenshotDir]
+// Crawls every internal route and reports broken links, missing anchors,
+// horizontal overflow and script errors.
+//
+//   node scripts/check.mjs [screenshotDir]
+//
+// By default it starts the local server in offline mode, with content from
+// studio/seed/fixiam-seed.ndjson answered through the real Sanity query.
+// Set BASE_URL to check a running site instead, for example a Vercel deployment.
 import { createRequire } from 'module';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,15 +14,28 @@ let chromium;
 try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require('/opt/node22/lib/node_modules/playwright')); }
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const url = 'file://' + path.join(root, 'index.html');
 const shots = process.argv[2];
+let server = null;
+let url = process.env.BASE_URL;
+if (!url) {
+  const { startServer } = await import('./dev-server.mjs');
+  server = await startServer({ port: 0, fixture: process.env.FIXTURE || 'studio/seed/fixiam-seed.ndjson', quiet: true });
+  url = server.url + '/';
+}
 
 const browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-page.on('console', (m) => m.type() === 'error' && !/fonts\.g|ERR_CERT|ERR_NAME|ERR_TUNNEL|ERR_PROXY/.test(m.text()) && errors.push('console: ' + m.text()));
+page.on('response', (r) => r.status() >= 400 && !/favicon\.ico$/.test(r.url()) && errors.push(`http ${r.status()}: ${r.url()}`));
+page.on('console', (m) => m.type() === 'error' && /status of 404/.test(m.text()) ? null : m.type() === 'error' && !/fonts\.g|ERR_CERT|ERR_NAME|ERR_TUNNEL|ERR_PROXY/.test(m.text()) && errors.push('console: ' + m.text()));
 await page.goto(url);
+await page.waitForFunction(() => window.FX && FX.contentStatus && FX.contentStatus !== 'loading', null, { timeout: 20000 });
+const status = await page.evaluate(() => FX.contentStatus);
+if (status !== 'ready') {
+  console.error(`Content did not load (status: ${status})`);
+  process.exit(1);
+}
 
 const seen = new Set();
 const queue = ['/'];
@@ -79,4 +98,5 @@ console.log(`routes crawled: ${seen.size}`);
 console.log(broken.length ? 'BROKEN:\n' + broken.join('\n') : 'no broken routes');
 console.log(errors.length ? 'ERRORS:\n' + [...new Set(errors)].join('\n') : 'no script errors');
 await browser.close();
+if (server) await server.close();
 process.exit(broken.length || errors.length ? 1 : 0);

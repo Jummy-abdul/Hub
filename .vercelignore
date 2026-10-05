@@ -1,0 +1,5 @@
+# Not part of the website. The Sanity Studio is deployed separately
+# (`npm run deploy` inside studio/).
+studio/
+scripts/
+dist/

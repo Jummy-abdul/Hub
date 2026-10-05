@@ -70,6 +70,7 @@
   const ORDER = ['concept', 'guide', 'journey', 'release'];
 
   FX.search = function (q) {
+    if (!FX.content) return []; // content not loaded yet
     if (!INDEX) build();
     const ts = terms(q);
     if (!ts.length) return [];
