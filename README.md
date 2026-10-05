@@ -41,6 +41,10 @@ The prototype keeps four content types separate. Each one has its own template a
 
 Pages that a journey references show a "Part of this journey" box automatically. Previous and next links come from the sidebar order.
 
+## Sanity Studio
+
+The `studio/` folder contains a Sanity Studio connected to project `idpyt5ut`, dataset `fixiam_docs_sandbox`. It defines schemas for Concepts, Guides, Journeys, Release Notes, Categories and the Documentation Homepage. The website does not read from Sanity yet. See [studio/README.md](studio/README.md).
+
 ## Project structure
 
 ```
