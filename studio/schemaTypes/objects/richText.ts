@@ -6,7 +6,8 @@ import {LINKABLE_TYPES} from '../constants'
 /**
  * Rich text used for article bodies. It supports the same building blocks the
  * prototype renders: paragraphs, subheadings, lists, inline code, links to
- * other documentation pages, callouts, code blocks and figures.
+ * other documentation pages, callouts, code blocks, figures, tables and
+ * built-in diagrams.
  */
 export const richText = defineType({
   name: 'richText',
@@ -59,5 +60,7 @@ export const richText = defineType({
     defineArrayMember({type: 'callout'}),
     defineArrayMember({type: 'codeBlock'}),
     defineArrayMember({type: 'figure'}),
+    defineArrayMember({type: 'table'}),
+    defineArrayMember({type: 'diagram'}),
   ],
 })

@@ -19,8 +19,22 @@ export const category = defineType({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      description: 'Used for links to this category on the section landing page.',
-      options: {source: 'title', maxLength: 64},
+      description: 'Used for links to this category on the section landing page. Must be unique within its section.',
+      options: {
+        source: 'title',
+        maxLength: 64,
+        // The same slug may be used in different sections, for example
+        // "authentication" in both Concepts and Guides.
+        isUnique: async (slug, context) => {
+          const {document, getClient} = context
+          const id = document?._id.replace(/^drafts\./, '') || ''
+          const count = await getClient({apiVersion: '2025-10-01'}).fetch<number>(
+            'count(*[_type == "category" && slug.current == $slug && section == $section && !(_id in [$id, $draftId])])',
+            {slug, section: (document as {section?: string})?.section || '', id, draftId: `drafts.${id}`},
+          )
+          return count === 0
+        },
+      },
       validation: (rule) => rule.required(),
     }),
     defineField({

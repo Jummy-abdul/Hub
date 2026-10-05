@@ -8,7 +8,18 @@ Sanity Studio for managing Fixiam Documentation content.
 | Dataset | `fixiam_docs_sandbox` |
 | Sanity | v6 (Node.js 22.12 or later) |
 
-The documentation website in the repository root does **not** read from Sanity yet. It still uses its hardcoded sample content. This Studio exists so the content model can be tested on its own first.
+The documentation website in the repository root does **not** read from Sanity yet. It still uses its hardcoded sample content.
+
+## Load the sample content
+
+The prototype's sample library (15 concepts, 35 guides, 6 journeys, 21 release notes, 17 categories and the homepage) can be imported into the dataset:
+
+```bash
+npx sanity login
+npm run seed:import
+```
+
+See [seed/README.md](seed/README.md) for how the import works and how it avoids duplicates.
 
 ## Run locally
 
@@ -55,10 +66,11 @@ sanity.cli.ts               CLI config for build and deploy
 env.ts                      Project ID and dataset (overridable with SANITY_STUDIO_PROJECT_ID / SANITY_STUDIO_DATASET)
 structure/index.ts          Studio sidebar
 schemaTypes/documents/      Document types: docsHomepage, concept, guide, journey, releaseNote, category
-schemaTypes/objects/        Reusable parts: rich text, callout, code block, figure, section, term, step,
-                            troubleshooting item, journey stage, discovery card, popular topic
+schemaTypes/objects/        Reusable parts: rich text, callout, code block, figure, table, diagram, section,
+                            term, step, troubleshooting item, journey stage, discovery card, popular topic
 schemaTypes/fields.ts       Fields shared by the article types
 schemaTypes/constants.ts    Shared option lists, which match the website's config.js
+seed/                       Builds, checks and imports the sample content from the prototype
 ```
 
 ## Checks
@@ -67,4 +79,6 @@ schemaTypes/constants.ts    Shared option lists, which match the website's confi
 npm run schema:validate   # validate schemas
 npm run typecheck         # TypeScript
 npm run build             # production build into dist/
+npm run seed:build        # regenerate seed/fixiam-seed.ndjson from the prototype
+npm run seed:check        # check the seed file against the schema (offline)
 ```

@@ -11,7 +11,11 @@
     "build": "sanity build",
     "deploy": "sanity deploy",
     "schema:validate": "sanity schema validate",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed:build": "node seed/build-seed.mjs",
+    "seed:check": "sanity exec seed/check-seed.ts",
+    "seed:import": "npm run seed:build && npm run seed:check && node seed/import.mjs",
+    "seed:import:replace": "npm run seed:build && npm run seed:check && node seed/import.mjs --replace"
   },
   "engines": {
     "node": ">=22.12"
@@ -27,6 +31,7 @@
   "devDependencies": {
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
+    "node-html-parser": "^7.1.0",
     "typescript": "^5.9.3"
   }
 }
