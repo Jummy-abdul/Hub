@@ -33,24 +33,25 @@
   /* ---------------- Theme ---------------- */
   const root = document.documentElement;
   const savedTheme = FX.store.get('theme', null);
-  if (savedTheme) root.setAttribute('data-theme', savedTheme);
+  const initialTheme = savedTheme === 'light' || savedTheme === 'dark'
+    ? savedTheme
+    : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  root.setAttribute('data-theme', initialTheme);
   const isDark = () => root.getAttribute('data-theme') === 'dark' || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
 
   /* ---------------- Header ---------------- */
-  const logo = `<svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" class="logo-bg"/><path d="M11 8.5h11M11 8.5v15M11 15.5h7.5" class="logo-f"/><circle cx="22" cy="22.5" r="2.4" class="logo-dot"/></svg>`;
+  const logo = `<span class="brand-logo" aria-hidden="true"><img class="fixiam-logo fixiam-logo-dark" src="assets/fixiam-logo-dark.svg" alt=""><img class="fixiam-logo fixiam-logo-white" src="assets/fixiam-logo-white.svg" alt=""></span>`;
 
   function renderHeader() {
     $('#header').innerHTML = `
       <div class="topbar-inner">
         <button type="button" class="icon-btn menu-btn" data-open-nav aria-label="Open navigation">${icons.menu}</button>
-        <a class="brand" href="#/" aria-label="Fixiam Documentation home">${logo}<span class="brand-name">Fixiam</span><span class="brand-docs">Documentation</span></a>
+        <a class="brand" href="#/" aria-label="Fixiam Documentation home">${logo}<span class="brand-docs">Documentation</span></a>
         <nav class="primary-nav" aria-label="Primary" id="primary-nav"></nav>
         <div class="topbar-actions">
           <button type="button" class="search-trigger" data-open-search aria-label="Search documentation">${icons.search}<span class="st-text">Search Fixiam documentation...</span><kbd>/</kbd></button>
-          <a class="proto-pill" href="#/about" title="About this prototype">Prototype</a>
-          <button type="button" class="icon-btn" data-annotate aria-pressed="false" title="Template view: label reusable components">${icons.grid}<span class="sr-only">Template view</span></button>
           <button type="button" class="icon-btn" data-theme-toggle title="Switch theme"><span class="sr-only">Switch theme</span><span class="theme-icon"></span></button>
-          <a class="btn btn-secondary btn-sm console-link" href="#" data-toast="Prototype: this would open the Fixiam Admin Console.">Admin Console</a>
+          <a class="btn btn-secondary btn-sm console-link" href="https://iam.seamfix.com" target="_blank" rel="noopener noreferrer">Admin Console</a>
         </div>
       </div>`;
     updateThemeIcon();
